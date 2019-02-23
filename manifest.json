@@ -6,8 +6,17 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "lib/browser-polyfill.js",
+      "background.js"
+    ]
   },
+
+  // "content_scripts" : [{
+  //   "js" : [
+  //     "lib/browser-polyfill.js"
+  //   ]
+  // }],
 
   "browser_action": {
     "default_icon": {

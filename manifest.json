@@ -1,7 +1,7 @@
 {
   "applications": {
       "gecko": {
-         "id": "WebHistoryGraph@p-lucero.me"
+         "id": "WebHistotree@p-lucero.me"
       }
   },
 
@@ -22,7 +22,7 @@
     "default_icon": {
       "48": "icons/Transitive_Closure.png"
     },
-    "default_title": "WebHistoryGraph"
+    "default_title": "Web Histotree"
     // "default_popup": "popup/summarize.html"
   },
 
@@ -34,7 +34,7 @@
 
   "manifest_version": 2,
 
-  "name": "WebHistoryGraph",
+  "name": "Web Histotree",
 
   "permissions": ["activeTab", "history", "storage", "unlimitedStorage", "tabs", "webNavigation"],
 

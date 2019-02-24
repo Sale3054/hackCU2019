@@ -10,7 +10,7 @@ function draw_graph(data)
 		}
 	})
 	s.startForceAtlas2()
-	setTimeout(() => {s.killForceAtlas2(); console.log("drew the graph"); console.log(s)}, 1000);
+	setTimeout(() => {s.killForceAtlas2(); console.log("drew the graph"); console.log(s); s.refresh();}, 1000);
 }
 
 function handle_error(error)

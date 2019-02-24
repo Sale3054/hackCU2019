@@ -2,6 +2,8 @@ console.log("Initializing the WebHistoryGraph extension!")
 
 var graph_headnodes = {}
 var graph_roots = []
+var graph_nodes = []
+var SCALE_FACTOR = 1
 
 var last_target_creation = 0
 var node_counter = 0
@@ -35,6 +37,7 @@ function handle_tab_creation(tab)
 					parent: undefined,
 					children: []
 				}
+				graph_nodes.push(node)
 				node_counter++
 				graph_roots.push(node)
 				graph_headnodes[tab.id] = node
@@ -63,6 +66,7 @@ function handle_tab_update(tabID, changeInfo, tab)
 				parent: graph_headnodes[tabID],
 				children: []
 			}
+			graph_nodes.push(node)
 			node_counter++
 			graph_headnodes[tabID].children.push(node)
 			graph_headnodes[tabID] = node
@@ -94,6 +98,7 @@ function handle_target_creation(details)
 			parent: graph_headnodes[details.sourceTabId],
 			children: []
 		}
+		graph_nodes.push(node)
 		node_counter++
 		graph_headnodes[details.sourceTabId].children.push(node)
 		graph_headnodes[details.tabId] = node
@@ -125,20 +130,41 @@ function database_query_responder(request, sender, sendResponse)
 	let edge_counter = 0
 	let root_counter = 0
 	let queue = []
+	let min_timestamp = new Date()
+	let max_timestamp = 0
 	for (let i = 0; i < graph_roots.length; i++)
 	{
 		queue.unshift(graph_roots[i])
 	}
+	for (let i = 0; i < graph_nodes.length; i++)
+	{
+		if (graph_nodes[i].time < min_timestamp)
+		{
+			min_timestamp = graph_nodes[i].time
+		}
+		if (graph_nodes[i].time > max_timestamp)
+		{
+			max_timestamp = graph_nodes[i].time
+		}
+	}
 	while (queue.length > 0)
 	{
 		let curr = queue.pop()
-		graph.nodes.push({
+		let rearranged_node = {
 			id: curr.node_id,
 			label: curr.url,
 			size: 1,
-			x: Math.random(),
-			y: Math.random()
-		})
+			// x: (curr.time - min_timestamp)/(max_timestamp - min_timestamp) * SCALE_FACTOR,
+			// y: curr.tab_id
+			x: 1,
+			y: 1
+		}
+		if (curr.is_root)
+		{
+			// rearranged_node.x = root_counter
+			root_counter++
+		}
+		graph.nodes.push(rearranged_node)
 		for (let i = 0; i < curr.children.length; i++)
 		{
 			queue.unshift(curr.children[i])

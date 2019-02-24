@@ -6,9 +6,14 @@ function draw_graph(data)
 		graph: data,
 		container: 'container',
 		settings: {
-			defaultNodeColor: '#ec5148' // FIXME make this different?
+			defaultNodeColor: '#ec5148', // FIXME make this different?
+			labelThreshold: 100
 		}
 	})
+	// s.bind('overNode', function(d)
+	// {
+	// 	s.settings('drawLabels', true)
+	// })
 	// s.startForceAtlas2()
 	// setTimeout(() => {s.killForceAtlas2(); console.log("drew the graph"); console.log(s); s.refresh();}, 1000);
 }

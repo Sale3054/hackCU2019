@@ -9,8 +9,8 @@ function draw_graph(data)
 			defaultNodeColor: '#ec5148' // FIXME make this different?
 		}
 	})
-	s.startForceAtlas2()
-	setTimeout(() => {s.killForceAtlas2(); console.log("drew the graph"); console.log(s); s.refresh();}, 1000);
+	// s.startForceAtlas2()
+	// setTimeout(() => {s.killForceAtlas2(); console.log("drew the graph"); console.log(s); s.refresh();}, 1000);
 }
 
 function handle_error(error)

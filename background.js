@@ -3,7 +3,16 @@ console.log("Initializing the WebHistoryGraph extension!")
 var graph_headnodes = {}
 var graph_roots = []
 
-var last_target_creation = new Date()
+var last_target_creation = 0
+var node_counter = 0
+
+// get all current browser tabs and add them as graph roots.
+browser.tabs.query({}).then((response) => {
+	for (let i = 0; i < response.length; i++)
+	{
+		handle_tab_creation(response[i])
+	}
+}, (err0r) => {console.log(err0r)})
 
 function handle_tab_creation(tab)
 {
@@ -21,9 +30,12 @@ function handle_tab_creation(tab)
 					window_id: tab.windowId,
 					time: new Date(),
 					url: tab.url,
+					node_id: node_counter,
+					is_root: true,
 					parent: undefined,
 					children: []
 				}
+				node_counter++
 				graph_roots.push(node)
 				graph_headnodes[tab.id] = node
 			}
@@ -46,9 +58,12 @@ function handle_tab_update(tabID, changeInfo, tab)
 				window_id: graph_headnodes[tabID].window_id,
 				time: new Date(),
 				url: changeInfo.url,
+				node_id: node_counter,
+				is_root: false,
 				parent: graph_headnodes[tabID],
 				children: []
 			}
+			node_counter++
 			graph_headnodes[tabID].children.push(node)
 			graph_headnodes[tabID] = node
 		}
@@ -74,9 +89,12 @@ function handle_target_creation(details)
 			window_id: graph_headnodes[details.sourceTabId].window_id,
 			time: new Date(),
 			url: details.url,
+			node_id: node_counter,
+			is_root: false,
 			parent: graph_headnodes[details.sourceTabId],
 			children: []
 		}
+		node_counter++
 		graph_headnodes[details.sourceTabId].children.push(node)
 		graph_headnodes[details.tabId] = node
 		// console.log("Parent: ")
@@ -85,7 +103,64 @@ function handle_target_creation(details)
 	// create a new graph branch, which involves creating a new head-node
 }
 
+function remove_internal_from_history(historyItem)
+{
+	if (historyItem.url === browser.runtime.getURL("demo.html"))
+	{
+		browser.history.deleteUrl({url: historyItem.url})
+	}
+}
+
+function create_internal_page(tab)
+{
+	browser.tabs.create({url: "demo.html"});
+}
+
+function database_query_responder(request, sender, sendResponse)
+{
+	let graph = {
+		"nodes": [],
+		"edges": []
+	}
+	let edge_counter = 0
+	let root_counter = 0
+	let queue = []
+	for (let i = 0; i < graph_roots.length; i++)
+	{
+		queue.unshift(graph_roots[i])
+	}
+	while (queue.length > 0)
+	{
+		let curr = queue.pop()
+		graph.nodes.push({
+			id: curr.node_id,
+			label: curr.url,
+			size: 1,
+			x: Math.random(),
+			y: Math.random()
+		})
+		for (let i = 0; i < curr.children.length; i++)
+		{
+			queue.unshift(curr.children[i])
+			graph.edges.push({
+				id: edge_counter,
+				source: curr.node_id,
+				target: curr.children[i].node_id
+			})
+			edge_counter++
+		}
+	}
+	sendResponse(graph)
+}
+
 browser.tabs.onCreated.addListener(handle_tab_creation)
 browser.tabs.onUpdated.addListener(handle_tab_update)
 browser.tabs.onRemoved.addListener(handle_tab_removal)
+
 browser.webNavigation.onCreatedNavigationTarget.addListener(handle_target_creation)
+
+browser.history.onVisited.addListener(remove_internal_from_history)
+
+browser.browserAction.onClicked.addListener(create_internal_page)
+
+browser.runtime.onMessage.addListener(database_query_responder)
